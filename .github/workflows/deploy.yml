@@ -21,7 +21,7 @@ jobs:
 
       - name: Add known hosts
         run: |
-          ssh-keyscan -H api.iktnb.com >> ~/.ssh/known_hosts
+          ssh-keyscan -H api.iktnb.com > ~/.ssh/known_hosts
 
       - name: Deploy to EC2
         run: |
