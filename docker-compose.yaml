@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  backend_rds:
+    build:
+      context: ./backend_rds
+      dockerfile: Dockerfile
+    container_name: backend_rds
+    environment:
+      CORS_ALLOWED_ORIGINS: 'http://localhost:8000,http://localhost:8001'
+      DB_NAME: mydatabase
+      DB_USER: myuser
+      DB_PASSWORD: mypassword
+      DB_HOST: postgres
+      DB_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_PASSWORD: "redis_password"
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend_rds:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  backend_redis:
+    build:
+      context: ./backend_redis
+      dockerfile: Dockerfile
+    container_name: backend_redis
+    environment:
+      CORS_ALLOWED_ORIGINS: 'http://localhost:8000,http://localhost:8001'
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_PASSWORD: 'redis_password'
+    command: python manage.py runserver 0.0.0.0:8001
+    volumes:
+      - ./backend_redis:/app
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:latest
+    container_name: redis_cache
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./frontend/templates:/usr/share/nginx/html
+    ports:
+      - "80:80"
+    depends_on:
+      - backend_rds
+      - backend_redis
+
+volumes:
+  postgres_data:
