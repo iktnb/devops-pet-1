@@ -9,6 +9,13 @@ jobs:
   build_and_push:
     runs-on: ubuntu-latest
 
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+      ECR_REPOSITORY_RDS: backend_rds
+      ECR_REPOSITORY_REDIS: backend_redis
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -18,13 +25,10 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
-            | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URI }}
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build backend_rds image
         run: |
@@ -32,8 +36,8 @@ jobs:
 
       - name: Tag and push backend_rds to ECR
         run: |
-          docker tag backend_rds:latest ${{ secrets.ECR_REPOSITORY_URI }}/backend_rds:latest
-          docker push ${{ secrets.ECR_REPOSITORY_URI }}/backend_rds:latest
+          docker tag backend_rds:latest ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_RDS }}:latest
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_RDS }}:latest
 
       - name: Build backend_redis image
         run: |
@@ -41,5 +45,5 @@ jobs:
 
       - name: Tag and push backend_redis to ECR
         run: |
-          docker tag backend_redis:latest ${{ secrets.ECR_REPOSITORY_URI }}/backend_redis:latest
-          docker push ${{ secrets.ECR_REPOSITORY_URI }}/backend_redis:latest
+          docker tag backend_redis:latest ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_REDIS }}:latest
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_REDIS }}:latest
