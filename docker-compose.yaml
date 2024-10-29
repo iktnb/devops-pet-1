@@ -71,7 +71,7 @@ services:
     container_name: nginx
     volumes:
       - ./nginx:/etc/nginx/conf.d
-      - ./frontend/templates:/usr/share/nginx/html
+      - ./frontend:/usr/share/nginx/html
     ports:
       - "80:80"
     depends_on:
