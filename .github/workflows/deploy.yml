@@ -12,7 +12,6 @@ jobs:
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-      ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
       ECR_REPOSITORY_RDS: backend_rds
       ECR_REPOSITORY_REDIS: backend_redis
 
@@ -27,23 +26,39 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECRcd 
+      - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Set ECR_REGISTRY
+        run: echo "ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}" >> $GITHUB_ENV
+
+      - name: Get commit hash
+        id: get-commit-hash
+        run: echo "commit_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Get timestamp
+        id: get-timestamp
+        run: echo "timestamp=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_ENV
 
       - name: Build backend_rds image
         run: |
-          docker-compose build backend_rds
+          IMAGE_TAG=${{ env.commit_hash }}-${{ env.timestamp }}
+          docker build -t ${{ env.ECR_REPOSITORY_RDS }}:$IMAGE_TAG -f backend_rds/Dockerfile backend_rds
 
       - name: Tag and push backend_rds to ECR
         run: |
-          docker tag backend_rds:latest ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_RDS }}:latest
-          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_RDS }}:latest
+          IMAGE_TAG=${{ env.commit_hash }}-${{ env.timestamp }}
+          docker tag ${{ env.ECR_REPOSITORY_RDS }}:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_RDS }}:$IMAGE_TAG
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_RDS }}:$IMAGE_TAG
 
       - name: Build backend_redis image
         run: |
-          docker-compose build backend_redis
+          IMAGE_TAG=${{ env.commit_hash }}-${{ env.timestamp }}
+          docker build -t ${{ env.ECR_REPOSITORY_REDIS }}:$IMAGE_TAG -f backend_redis/Dockerfile backend_redis
 
       - name: Tag and push backend_redis to ECR
         run: |
-          docker tag backend_redis:latest ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_REDIS }}:latest
-          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_REDIS }}:latest
+          IMAGE_TAG=${{ env.commit_hash }}-${{ env.timestamp }}
+          docker tag ${{ env.ECR_REPOSITORY_REDIS }}:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_REDIS }}:$IMAGE_TAG
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_REDIS }}:$IMAGE_TAG
