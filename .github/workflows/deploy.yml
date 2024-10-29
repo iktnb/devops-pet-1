@@ -27,12 +27,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECR
+      - name: Login to Amazon ECRcd 
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build backend_rds image
         run: |
-          docker-compose -f docker-compose.yml build backend_rds
+          docker-compose build backend_rds
 
       - name: Tag and push backend_rds to ECR
         run: |
@@ -41,7 +41,7 @@ jobs:
 
       - name: Build backend_redis image
         run: |
-          docker-compose -f docker-compose.yml build backend_redis
+          docker-compose build backend_redis
 
       - name: Tag and push backend_redis to ECR
         run: |
