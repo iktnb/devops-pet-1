@@ -12,6 +12,7 @@ jobs:
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
       ECR_REPOSITORY_RDS: backend_rds
       ECR_REPOSITORY_REDIS: backend_redis
 
@@ -62,3 +63,27 @@ jobs:
           IMAGE_TAG=${{ env.commit_hash }}-${{ env.timestamp }}
           docker tag ${{ env.ECR_REPOSITORY_REDIS }}:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_REDIS }}:$IMAGE_TAG
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_REDIS }}:$IMAGE_TAG
+
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync ./frontend s3://${{ env.S3_BUCKET_NAME }}/ \
+            --acl public-read \
+            --delete \
+            --cache-control max-age=31536000 \
+            --exclude "index.html"
+
+          # Upload index.html with no caching
+          aws s3 cp ./build/index.html s3://${{ env.S3_BUCKET_NAME }}/index.html \
+            --acl public-read \
+            --cache-control max-age=0 \
+            --content-type "text/html; charset=utf-8"
+
+      - name: Invalidate CloudFront Cache
+        if: success()
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+
+        

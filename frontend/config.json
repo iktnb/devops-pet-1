@@ -1,5 +1,5 @@
 {
-    "BACKEND_RDS_URL": "http://<public-rds-endpoint>:<port>/test_connection/",
-    "BACKEND_REDIS_URL": "http://<public-redis-endpoint>:<port>/test_connection/"
+    "BACKEND_RDS_URL": "http://api.iktnb.com:8000/test_connection/",
+    "BACKEND_REDIS_URL": "http://api.iktnb.com:8001/test_connection/"
   }
   
