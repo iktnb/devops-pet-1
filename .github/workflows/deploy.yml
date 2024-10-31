@@ -11,7 +11,7 @@ jobs:
 
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
-      ECR_REGISTRY: $${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$${{ secrets.AWS_REGION }}.amazonaws.com
+      ECR_REGISTRY: ${{ secrets.ECR_REPOSITORY_URI }}
 
     steps:
       - name: Checkout code
