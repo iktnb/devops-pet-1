@@ -53,7 +53,7 @@ jobs:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
           AWS_REGION: us-east-1  # укажи регион, в котором находится ECR
         run: |
-          scp -o StrictHostKeyChecking=no -i /tmp/ec2_key.pem docker-compose.yml ubuntu@${{ secrets.EC2_PUBLIC_IP }}:/home/ubuntu/docker-compose.yml
+          scp -o StrictHostKeyChecking=no -i /tmp/ec2_key.pem docker-compose.yaml ubuntu@${{ secrets.EC2_PUBLIC_IP }}:/home/ubuntu/docker-compose.yaml
   
           ssh -o StrictHostKeyChecking=no -i /tmp/ec2_key.pem ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
           
