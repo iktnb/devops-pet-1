@@ -1,4 +1,4 @@
-name: Build and Push Docker Images to ECR
+name: Build, Push to ECR, and Deploy to EC2
 
 on:
   push:
@@ -6,15 +6,13 @@ on:
       - main
 
 jobs:
-  build_and_push:
+  build_push_deploy:
     runs-on: ubuntu-latest
 
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
-      ECR_REPOSITORY_RDS: backend_rds
-      ECR_REPOSITORY_REDIS: backend_redis
+      ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
     steps:
       - name: Checkout code
@@ -28,62 +26,31 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Set ECR_REGISTRY
-        run: echo "ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}" >> $GITHUB_ENV
-
-      - name: Get commit hash
-        id: get-commit-hash
-        run: echo "commit_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-
-      - name: Get timestamp
-        id: get-timestamp
-        run: echo "timestamp=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_ENV
-
-      - name: Build backend_rds image
+      - name: Set image tag
+        id: vars
         run: |
-          IMAGE_TAG=${{ env.commit_hash }}-${{ env.timestamp }}
-          docker build -t ${{ env.ECR_REPOSITORY_RDS }}:$IMAGE_TAG -f backend_rds/Dockerfile backend_rds
+          echo "IMAGE_TAG=$(git rev-parse --short HEAD)-$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
-      - name: Tag and push backend_rds to ECR
+      - name: Build Docker images
+        run: docker-compose build
+
+      - name: Tag and Push images to ECR
         run: |
-          IMAGE_TAG=${{ env.commit_hash }}-${{ env.timestamp }}
-          docker tag ${{ env.ECR_REPOSITORY_RDS }}:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_RDS }}:$IMAGE_TAG
-          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_RDS }}:$IMAGE_TAG
+          SERVICES=$(docker-compose config --services)
+          for SERVICE in $SERVICES; do
+            docker tag ${SERVICE}:latest ${{ env.ECR_REGISTRY }}/${SERVICE}:${{ env.IMAGE_TAG }}
+            docker push ${{ env.ECR_REGISTRY }}/${SERVICE}:${{ env.IMAGE_TAG }}
+          done
 
-      - name: Build backend_redis image
+      # Deploy to EC2 Server
+      - name: Deploy on EC2
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
-          IMAGE_TAG=${{ env.commit_hash }}-${{ env.timestamp }}
-          docker build -t ${{ env.ECR_REPOSITORY_REDIS }}:$IMAGE_TAG -f backend_redis/Dockerfile backend_redis
-
-      - name: Tag and push backend_redis to ECR
-        run: |
-          IMAGE_TAG=${{ env.commit_hash }}-${{ env.timestamp }}
-          docker tag ${{ env.ECR_REPOSITORY_REDIS }}:$IMAGE_TAG ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_REDIS }}:$IMAGE_TAG
-          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_REDIS }}:$IMAGE_TAG
-
-
-      - name: Deploy to S3
-        run: |
-          aws s3 sync ./frontend s3://${{ env.S3_BUCKET_NAME }}/ \
-            --acl public-read \
-            --delete \
-            --cache-control max-age=31536000 \
-            --exclude "index.html"
-
-          # Upload index.html with no caching
-          aws s3 cp ./build/index.html s3://${{ env.S3_BUCKET_NAME }}/index.html \
-            --acl public-read \
-            --cache-control max-age=0 \
-            --content-type "text/html; charset=utf-8"
-
-      - name: Invalidate CloudFront Cache
-        if: success()
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
-
-        
+          ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY }}" ubuntu@${{ secrets.EC2_PUBLIC_IP }} << EOF
+            cd /path/to/your/docker-compose/directory
+            docker-compose pull
+            docker-compose up -d
+          EOF
