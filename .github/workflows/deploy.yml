@@ -38,7 +38,7 @@ jobs:
           for SERVICE in "${SERVICES[@]}"; do
             docker build -t ${SERVICE}:latest ./${SERVICE}
             docker tag ${SERVICE}:latest $${{ env.ECR_REGISTRY }}/${SERVICE}:${{ env.IMAGE_TAG }}
-            docker push $${{ env.ECR_REGISTRY }}/${SERVICE}:${{ env.IMAGE_TAG }}
+            docker push ${{ env.ECR_REGISTRY }}/${SERVICE}:${{ env.IMAGE_TAG }}
           done
 
 
