@@ -26,6 +26,7 @@ services:
       - postgres
       - redis
 
+
   backend_redis:
     build:
       context: ./backend_redis
