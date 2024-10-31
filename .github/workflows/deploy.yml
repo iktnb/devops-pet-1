@@ -34,12 +34,13 @@ jobs:
 
       - name: Tag and Push images to ECR
         run: |
-          SERVICES=$(docker-compose config --services)
-          for SERVICE in $SERVICES; do
-            docker build -t ${SERVICE}:latest .
+          SERVICES=("backend_rds" "backend_redis")
+          for SERVICE in "${SERVICES[@]}"; do
+            docker build -t ${SERVICE}:latest ./${SERVICE}
             docker tag ${SERVICE}:latest $${{ env.ECR_REGISTRY }}/${SERVICE}:${{ env.IMAGE_TAG }}
             docker push $${{ env.ECR_REGISTRY }}/${SERVICE}:${{ env.IMAGE_TAG }}
           done
+
 
       - name: Deploy on EC2
         env:
