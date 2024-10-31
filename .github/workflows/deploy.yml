@@ -11,7 +11,6 @@ jobs:
 
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
-      ECR_REGISTRY: ${{ secrets.ECR_REPOSITORY_URI }}
 
     steps:
       - name: Checkout code
@@ -37,8 +36,8 @@ jobs:
           SERVICES=("backend_rds" "backend_redis")
           for SERVICE in "${SERVICES[@]}"; do
             docker build -t ${SERVICE}:latest ./${SERVICE}
-            docker tag ${SERVICE}:latest $${{ env.ECR_REGISTRY }}/${SERVICE}:${{ env.IMAGE_TAG }}
-            docker push ${{ env.ECR_REGISTRY }}/${SERVICE}:${{ env.IMAGE_TAG }}
+            docker tag ${SERVICE}:latest ${{ secrets.ECR_REPOSITORY_URI }}/${SERVICE}:${{ env.IMAGE_TAG }}
+            docker push ${{ secrets.ECR_REPOSITORY_URI }}/${SERVICE}:${{ env.IMAGE_TAG }}
           done
 
 
