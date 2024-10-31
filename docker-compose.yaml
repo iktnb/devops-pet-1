@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   backend_rds:
-    build:
-      context: ./backend_rds
-      dockerfile: Dockerfile
+    image: 024848481979.dkr.ecr.us-east-1.amazonaws.com/backend_rds:${IMAGE_TAG}
     container_name: backend_rds
     environment:
       CORS_ALLOWED_ORIGINS: 'http://localhost:8000,http://localhost:8001'
@@ -26,11 +24,8 @@ services:
       - postgres
       - redis
 
-
   backend_redis:
-    build:
-      context: ./backend_redis
-      dockerfile: Dockerfile
+    image: 024848481979.dkr.ecr.us-east-1.amazonaws.com/backend_redis:${IMAGE_TAG}
     container_name: backend_redis
     environment:
       CORS_ALLOWED_ORIGINS: 'http://localhost:8000,http://localhost:8001'
