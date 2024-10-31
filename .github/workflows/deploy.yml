@@ -38,6 +38,8 @@ jobs:
             docker build -t ${SERVICE}:latest ./${SERVICE}
             docker tag ${SERVICE}:latest ${{ secrets.ECR_REPOSITORY_URI }}/${SERVICE}:${{ env.IMAGE_TAG }}
             docker push ${{ secrets.ECR_REPOSITORY_URI }}/${SERVICE}:${{ env.IMAGE_TAG }}
+            docker tag ${SERVICE}:latest ${{ secrets.ECR_REPOSITORY_URI }}/${SERVICE}:latest
+            docker push ${{ secrets.ECR_REPOSITORY_URI }}/${SERVICE}:latest
           done
 
 
