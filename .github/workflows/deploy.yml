@@ -61,7 +61,7 @@ jobs:
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws configure set region ${{ secrets.AWS_REGION }}
           
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 024848481979.dkr.ecr.$AWS_REGION.amazonaws.com
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin 024848481979.dkr.ecr.$AWS_REGION.amazonaws.com
           cd /home/ubuntu
           docker-compose pull
           docker-compose up -d
