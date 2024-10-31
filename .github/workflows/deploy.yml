@@ -11,14 +11,12 @@ jobs:
 
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-      ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+      ECR_REGISTRY: $${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$${{ secrets.AWS_REGION }}.amazonaws.com
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Install Docker Compose
       - name: Install Docker Compose
         run: |
           sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -28,9 +26,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: $${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: $${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: $${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
@@ -47,23 +45,20 @@ jobs:
         run: |
           SERVICES=$(docker-compose config --services)
           for SERVICE in $SERVICES; do
-            docker tag ${SERVICE}:latest ${{ env.ECR_REGISTRY }}/${SERVICE}:${{ env.IMAGE_TAG }}
-            docker push ${{ env.ECR_REGISTRY }}/${SERVICE}:${{ env.IMAGE_TAG }}
+            docker tag ${SERVICE}:latest $${{ env.ECR_REGISTRY }}/${SERVICE}:${{ env.IMAGE_TAG }}
+            docker push $${{ env.ECR_REGISTRY }}/${SERVICE}:${{ env.IMAGE_TAG }}
           done
 
-      # Deploy to EC2 Server
       - name: Deploy on EC2
         env:
-          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+          IMAGE_TAG: $${{ env.IMAGE_TAG }}
         run: |
           ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY }}" ubuntu@${{ secrets.EC2_PUBLIC_IP }} << EOF
-            # Install Docker Compose if not installed
             if ! command -v docker-compose &> /dev/null
             then
               sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
               sudo chmod +x /usr/local/bin/docker-compose
             fi
-            # Update Docker containers
             cd /path/to/your/docker-compose/directory
             docker-compose pull
             docker-compose up -d
