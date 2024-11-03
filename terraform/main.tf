@@ -20,6 +20,32 @@ resource "aws_instance" "us_east_server" {
   tags = {
     Name = "US_East_Server"
   }
+
+  # Скрипт для установки Docker, Docker Compose и AWS CLI
+  user_data = <<-EOF
+    #!/bin/bash
+    # Обновляем пакеты
+    sudo apt-get update -y
+
+    # Устанавливаем Docker
+    sudo apt-get install -y docker.io
+    sudo systemctl start docker
+    sudo systemctl enable docker
+
+    # Устанавливаем Docker Compose
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+    # Устанавливаем AWS CLI
+    sudo apt-get install -y unzip
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install
+
+    # Очищаем временные файлы
+    rm -rf awscliv2.zip aws
+  EOF
 }
 
 # S3 Bucket for static files
