@@ -10,7 +10,7 @@ RUN pip install -r requirements.txt
 
 # Копируем весь код проекта
 COPY . .
-
+RUN ls -la /app
 # Открываем порт для приложения
 EXPOSE 8000
 
