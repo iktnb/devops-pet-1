@@ -10,7 +10,13 @@ RUN pip install -r requirements.txt
 
 # Копируем весь код проекта
 COPY . .
+
+# Выводим содержимое директории /app в консоль для отладки
 RUN ls -la /app
+
+# Добавляем права на выполнение для manage.py
+RUN chmod +x /app/manage.py
+
 # Открываем порт для приложения
 EXPOSE 8000
 
