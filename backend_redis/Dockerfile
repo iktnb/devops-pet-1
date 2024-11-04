@@ -1,10 +1,10 @@
 # Используем базовый образ Python
 FROM python:3.10
 
-
+ENV PYTHONUNBUFFERED 1
 WORKDIR /app
 
-COPY backend_redis /app
+COPY backend_redis /app/
 
 RUN pip install -r requirements.txt
 RUN chmod +x manage.py
