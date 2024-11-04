@@ -64,6 +64,9 @@ jobs:
           aws configure set region ${{ secrets.AWS_REGION }}
           
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin 024848481979.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+
+          docker system prune -a --volumes -f
           cd /home/ubuntu
           docker-compose pull
           docker-compose up -d
