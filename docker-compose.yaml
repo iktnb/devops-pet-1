@@ -15,8 +15,6 @@ services:
       REDIS_PORT: 6379
       REDIS_DB: 0
       REDIS_PASSWORD: "redis_password"
-    volumes:
-      - ./backend_rds:/app
     ports:
       - "8000:8000"
     depends_on:
@@ -32,8 +30,6 @@ services:
       REDIS_PORT: 6379
       REDIS_DB: 0
       REDIS_PASSWORD: 'redis_password'
-    volumes:
-      - ./backend_redis:/app
     ports:
       - "8001:8001"
     depends_on:
@@ -56,9 +52,10 @@ services:
     container_name: redis_cache
     command: redis-server /usr/local/etc/redis/redis.conf
     volumes:
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - redis_data:/data
     ports:
       - "6379:6379"
 
 volumes:
   postgres_data:
+  redis_data:
