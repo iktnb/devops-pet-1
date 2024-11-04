@@ -1,25 +1,14 @@
 # Используем базовый образ Python
 FROM python:3.10
 
-# Устанавливаем рабочую директорию
-
-
-# Устанавливаем dos2unix для преобразования формата файлов
-RUN apt-get update && apt-get install -y dos2unix
-
-# Копируем зависимости и устанавливаем их
-
-
-# Копируем весь код проекта
-COPY . ./app
 
 WORKDIR /app
 
-RUN pip install -r requirements.txt
-# Преобразуем manage.py в Unix-совместимый формат
-RUN dos2unix /app/manage.py
+COPY . .
 
-# Открываем порт для приложения
+RUN pip install -r requirements.txt
+RUN chmod +x manage.py
+
 EXPOSE 8001
 
 # Команда по умолчанию
