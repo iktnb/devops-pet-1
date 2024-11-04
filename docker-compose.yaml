@@ -15,7 +15,6 @@ services:
       REDIS_PORT: 6379
       REDIS_DB: 0
       REDIS_PASSWORD: "redis_password"
-    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./backend_rds:/app
     ports:
@@ -33,7 +32,6 @@ services:
       REDIS_PORT: 6379
       REDIS_DB: 0
       REDIS_PASSWORD: 'redis_password'
-    command: python manage.py runserver 0.0.0.0:8001
     volumes:
       - ./backend_redis:/app
     ports:
