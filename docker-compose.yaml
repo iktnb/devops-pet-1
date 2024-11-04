@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   backend_rds:
+    restart: always
     image: 024848481979.dkr.ecr.us-east-1.amazonaws.com/backend_rds:latest
     container_name: backend_rds
     environment:
@@ -22,6 +23,7 @@ services:
       - redis
 
   backend_redis:
+    restart: always
     image: 024848481979.dkr.ecr.us-east-1.amazonaws.com/backend_redis:latest
     container_name: backend_redis
     environment:
@@ -36,6 +38,7 @@ services:
       - redis
 
   postgres:
+    restart: always
     image: postgres:latest
     container_name: postgres_db
     environment:
@@ -48,6 +51,7 @@ services:
       - "5432:5432"
 
   redis:
+    restart: always
     image: redis:latest
     container_name: redis_cache
     command: /bin/sh -c "redis-server --requirepass 123456"
