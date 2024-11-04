@@ -23,4 +23,4 @@ RUN dos2unix /app/manage.py
 EXPOSE 8000
 
 # Команда по умолчанию
-CMD ["python", "/app/manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python3", "/app/manage.py", "runserver", "0.0.0.0:8000"]
