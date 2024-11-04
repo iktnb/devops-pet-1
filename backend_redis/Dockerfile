@@ -4,7 +4,7 @@ FROM python:3.10
 
 WORKDIR /app
 
-COPY . .
+COPY backend_redis /app
 
 RUN pip install -r requirements.txt
 RUN chmod +x manage.py
