@@ -4,7 +4,7 @@ FROM python:3.10
 # Устанавливаем dos2unix для преобразования формата файлов
 ENV PYTHONUNBUFFERED 1
 WORKDIR /app
-COPY backend_rds /app/
+COPY . .
 
 
 RUN pip install -r requirements.txt

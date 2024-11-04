@@ -4,7 +4,7 @@ FROM python:3.10
 ENV PYTHONUNBUFFERED 1
 WORKDIR /app
 
-COPY backend_redis /app/
+COPY . .
 
 RUN pip install -r requirements.txt
 RUN chmod +x manage.py
