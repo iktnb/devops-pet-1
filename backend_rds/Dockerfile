@@ -12,8 +12,10 @@ RUN apt-get update && apt-get install -y dos2unix
 
 # Копируем весь код проекта
 COPY . ./app
-RUN pip install -r requirements.txt
+
 WORKDIR /app
+
+RUN pip install -r requirements.txt
 # Преобразуем manage.py в Unix-совместимый формат
 RUN dos2unix /app/manage.py
 
