@@ -26,11 +26,6 @@ jobs:
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Set image tag
-        id: vars
-        run: |
-          echo "IMAGE_TAG=$(git rev-parse --short HEAD)-$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
-
       - name: Tag and Push images to ECR
         run: |
           SERVICES=("backend_rds" "backend_redis")
